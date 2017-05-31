@@ -5,6 +5,8 @@ module Spree
     included do
       has_many :relations, -> { order(:position) }, as: :relatable
 
+      validates :relatable_id, uniqueness: { scope: [:related_to_id, :relation_type_id] }
+
       after_destroy :destroy_relations
 
       # Returns all the Spree::RelationType's which apply_to this class.
@@ -61,6 +63,17 @@ module Spree
       relations.destroy_all
       # Next we destroy relationships "to" this.
       Spree::Relation.where(related_to_type: self.class.to_s).where(related_to_id: id).destroy_all
+    end
+
+    def relations_to(related_to, relation_name)
+      relations.
+      includes(:relation_type).
+      where(spree_relation_type: { name: relation_name })
+      find_by(related_to_id: related_to.id)
+    end
+
+    def offer_related_to_price(related_to, relation)
+      related_to.price - relations_to(related_to, relation).try(:discount_amount)
     end
 
     private
