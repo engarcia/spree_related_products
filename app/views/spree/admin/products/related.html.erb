@@ -30,7 +30,7 @@
             <div class="input-group">
               <%= text_field_tag :add_discount, 0.0, class: 'form-control text-center' %>
               <span class="input-group-btn">
-                <%= button_link_to Spree.t(:add), admin_product_relations_url(@product), icon: 'add', class: 'btn-success', id: 'add_related_product', data: { update: 'products-table-wrapper' } %>
+                <%= button_link_to Spree.t(:add), admin_product_relations_url(@product), icon: 'add', class: 'btn-success', id: 'add_related_product', data: { update: 'related-table-wrapper' } %>
               </span>
             </div>
           </div>
@@ -39,8 +39,8 @@
     </fieldset>
   </div>
 
-  <div id="products-table-wrapper">
-    <%= render 'related_products_table', product: @product %>
+  <div id="related-table-wrapper">
+    <%= render 'spree/admin/relations/related_table', object: @product %>
   </div>
 
   <%= content_for :head do %>
@@ -54,10 +54,12 @@
           url: this.href,
           type: 'POST',
           data: {
-            'relation[related_to_type]' : 'Product',
+            'relation[related_to_type]' : 'Spree::Product',
             'relation[related_to_id]': $('#add_variant_name').val(),
             'relation[relation_type_id]': $('#add_type').val(),
-            'relation[discount_amount]' : $('#add_discount').val()
+            'relation[discount_amount]' : $('#add_discount').val(),
+            'relation[relatable_id]' : '<%= @product.id %>',
+            'relation[relatable_type]' :'Spree::Product'
           }
         });
         return false;
