@@ -7,18 +7,29 @@ module Spree
 
       def create
         @relation = Relation.new(relation_params)
-        @relation.relatable = @product
-        @relation.related_to = Spree::Variant.find(relation_params[:related_to_id]).product
+
+        if @relation.relation_type.applies_to == 'Spree::Product'
+          @relation.relatable = @product
+          @relation.related_to = Spree::Variant.find(relation_params[:related_to_id]).product
+
+          @related_object = @product
+        elsif @relation.relation_type.applies_to == 'Spree::Variant'
+          @related_object = Spree::Variant.find(relation_params[:relatable_id])
+        end
+
         @relation.save
 
         respond_with(@relation)
       end
 
       def update
-        @relation = Relation.find(params[:id])
-        @relation.update_attribute :discount_amount, relation_params[:discount_amount] || 0
+        @relation = Spree::Relation.find(params[:id])
+        @relation.update_attributes(relation_params)
 
-        redirect_to(related_admin_product_url(@relation.relatable))
+        respond_to do |format|
+          format.html { redirect_to(related_admin_product_url(@relation.relatable)) }
+          format.js   { }
+        end
       end
 
       def update_positions
@@ -60,11 +71,13 @@ module Spree
           :related_to,
           :relation_type,
           :relatable,
+          :relatable_type,
+          :relatable_id,
           :related_to_id,
           :discount_amount,
           :relation_type_id,
           :related_to_type,
-          :position
+          :position,
         ]
       end
 
