@@ -2,7 +2,8 @@
    <colgroup>
     <col style="width: 5%" />
     <col style="width: 35%" />
-    <col style="width: 35%" />
+    <col style="width: 15%" />
+    <col style="width: 20%" />
     <col style="width: 20%" />
     <col style="width: 5%" />
   </colgroup>
@@ -10,6 +11,7 @@
     <tr data-hook="products_header">
       <th></th>
       <th><%= Spree.t(:name) %></th>
+      <th><%= Spree.t(:sku) %></th>
       <th><%= Spree.t(:type) %></th>
       <th><%= Spree.t(:discount_amount) %></th>
       <th class="actions"></th>
@@ -21,12 +23,22 @@
         <td class="handle move-handle">
           <span class="icon icon-move handle"></span>
         </td>
-        <% relatable_link = ( object.class.name == 'Spree::Product' ? relation.relatable : relation.relatable.product ) %>
+        <% product_relatable  = ( object.class.name == 'Spree::Product' ? relation.relatable : relation.relatable.product ) %>
+        <% product_related_to = ( object.class.name == 'Spree::Product' ? relation.related_to : relation.related_to.product ) %>
 
-        <td><%= link_to relation.related_to.name, ( object.class.name == 'Spree::Product' ? relation.related_to : relation.related_to.product ) %></td>
+        <td><%= link_to relation.related_to.name, product_related_to %></td>
+
+        <td>
+          <% if object.class.name == 'Spree::Variant' && !relation.related_to.is_master? %>
+              <%= link_to relation.related_to.sku, admin_product_variant_path(product_related_to, relation.related_to) %>
+          <% else %>
+              <%= link_to relation.related_to.sku, product_related_to %>
+          <% end %>
+        </td>
+
         <td><%= relation.relation_type.name %></td>
         <td>
-          <%= form_for relation, url: admin_product_relation_path(relatable_link, relation) do |f| %>
+          <%= form_for relation, url: admin_product_relation_path(product_relatable, relation) do |f| %>
             <div class="input-group">
               <%= f.text_field :discount_amount, class: 'form-control text-center' %>
               <span class="input-group-btn">
@@ -36,7 +48,7 @@
           <% end %>
         </td>
         <td class="actions">
-          <%= link_to_delete relation, url: admin_product_relation_url(relatable_link, relation), no_text: true %>
+          <%= link_to_delete relation, url: admin_product_relation_url(product_relatable, relation), no_text: true %>
         </td>
       </tr>
     <% end %>
