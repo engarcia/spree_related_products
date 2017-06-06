@@ -5,8 +5,6 @@ module Spree
     included do
       has_many :relations, -> { order(:position) }, as: :relatable
 
-      validates :relatable_id, uniqueness: { scope: [:related_to_id, :relation_type_id] }
-
       after_destroy :destroy_relations
 
       # Returns all the Spree::RelationType's which apply_to this class.
