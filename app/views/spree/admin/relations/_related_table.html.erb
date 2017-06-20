@@ -1,10 +1,11 @@
 <table class="table sortable" data-hook="products_table" data-sortable-link="<%= update_positions_admin_product_relations_url(@product) %>">
    <colgroup>
     <col style="width: 5%" />
-    <col style="width: 35%" />
+    <col style="width: 30%" />
     <col style="width: 15%" />
-    <col style="width: 20%" />
-    <col style="width: 20%" />
+    <col style="width: 15%" />
+    <col style="width: 15%" />
+    <col style="width: 15%" />
     <col style="width: 5%" />
   </colgroup>
   <thead>
@@ -14,6 +15,7 @@
       <th><%= Spree.t(:sku) %></th>
       <th><%= Spree.t(:type) %></th>
       <th><%= Spree.t(:discount_amount) %></th>
+      <th><%= Spree.t(:update) %></th>
       <th class="actions"></th>
     </tr>
   </thead>
@@ -37,16 +39,20 @@
         </td>
 
         <td><%= relation.relation_type.name %></td>
-        <td>
-          <%= form_for relation, url: admin_product_relation_path(product_relatable, relation) do |f| %>
+        <%= form_for relation, url: admin_product_relation_path(product_relatable, relation) do |f| %>
+          <td>
             <div class="input-group">
-              <%= f.text_field :discount_amount, class: 'form-control text-center' %>
-              <span class="input-group-btn">
-                <%= f.button Spree.t(:update), type: 'submit', class: 'btn btn-primary' %>
-              </span>
+              <%= f.text_field :discount_amount, class: 'form-control text-center', id: "discount_#{f.object.id}" %>
             </div>
-          <% end %>
-        </td>
+          </td>
+
+          <td>
+            <span class="input-group-btn">
+              <%= link_to Spree.t(:update), "#copayment_div_#{f.object.id}", class: 'pull-right btn btn-primary submit-reaction', 'data-relation': f.object.id, 'data-product': @product.id %>
+            </span>
+          </td>
+        <% end %>
+
         <td class="actions">
           <%= link_to_delete relation, url: admin_product_relation_url(product_relatable, relation), no_text: true %>
         </td>
@@ -54,3 +60,21 @@
     <% end %>
   </tbody>
 </table>
+
+<script type="text/javascript">
+  $('.submit-reaction').on ('click', function() {
+    relation_id = $(this).data('relation')
+
+    discount = $("#discount_" + relation_id).val();
+
+    $.ajax({
+      dataType: 'html',
+      url: ("/admin/products/" + $(this).data('product') + "product_id/relations/" + relation_id),
+      type: 'put',
+      data: { 'relation[discount_amount]': discount },
+      success: function(data) {
+        $('.flash').html('<div class="alert alert-success"><a class="close" data-dismiss="alert">×</a><span>'+ 'Actualizado con éxito' +'</span></div>')
+      }
+    });
+  })
+</script>
